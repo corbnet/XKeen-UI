@@ -115,6 +115,30 @@ function renameRoute(doc: MihomoDoc, oldName: string, newName: string) {
   }
 }
 
+/* Переименование СЕЛЕКТОРА (proxy-group) — распространить на все ссылки,
+   чтобы конфиг не падал с "proxy [X] not found":
+   1) target-поле в правилах (последний сегмент, либо предпоследний при no-resolve);
+   2) members других групп (proxies). */
+function renameGroupEverywhere(doc: MihomoDoc, oldName: string, newName: string) {
+  // правила
+  const rules = doc.rules ?? []
+  for (let i = 0; i < rules.length; i++) {
+    const parts = String(rules[i]).split(',')
+    // target обычно последний сегмент; учесть хвост no-resolve/src-* у IP-правил
+    let ti = parts.length - 1
+    if (/^(no-resolve|src)$/i.test(parts[ti]?.trim() ?? '')) ti -= 1
+    if (parts[ti]?.trim() === oldName) {
+      parts[ti] = newName
+      rules[i] = parts.join(',')
+    }
+  }
+  // members других групп
+  for (const g of doc['proxy-groups'] ?? []) {
+    if (!Array.isArray(g.proxies)) continue
+    g.proxies = g.proxies.map((p) => (p === oldName ? newName : p))
+  }
+}
+
 function dumpYaml(doc: MihomoDoc): string {
   const clone = JSON.parse(JSON.stringify(doc)) as MihomoDoc
   for (const g of clone['proxy-groups'] ?? []) {
@@ -184,8 +208,7 @@ export function ConfigEditorModal({ open, onOpenChange, onSaved, onApply }: Prop
     setSaving(true)
     try {
       if (await writeConfig()) {
-        showToast('config.yaml сохранён. Перезапустите ядро, чтобы применить.', 'success')
-        onOpenChange(false)
+        showToast('config.yaml сохранён', 'success')
       }
     } finally {
       setSaving(false)
@@ -196,7 +219,6 @@ export function ConfigEditorModal({ open, onOpenChange, onSaved, onApply }: Prop
     setApplying(true)
     try {
       if (await writeConfig()) {
-        onOpenChange(false)
         await onApply?.() // мягкий перезапуск ядра (тосты показывает панель)
       }
     } finally {
@@ -260,7 +282,7 @@ export function ConfigEditorModal({ open, onOpenChange, onSaved, onApply }: Prop
               </EmptyContent>
             </Empty>
           ) : tab === 'groups' ? (
-            <GroupsTab groups={groups} providers={providers} rerender={rerender} />
+            <GroupsTab doc={doc} groups={groups} providers={providers} rerender={rerender} showToast={showToast} />
           ) : tab === 'subs' ? (
             <SubsTab doc={doc} rerender={rerender} showToast={showToast} />
           ) : (
@@ -274,13 +296,17 @@ export function ConfigEditorModal({ open, onOpenChange, onSaved, onApply }: Prop
 
 /* ====================== СЕЛЕКТОРЫ ====================== */
 function GroupsTab({
+  doc,
   groups,
   providers,
   rerender,
+  showToast,
 }: {
+  doc: MihomoDoc
   groups: ProxyGroup[]
   providers: Record<string, unknown>
   rerender: () => void
+  showToast: (m: string, t?: 'success' | 'error') => void
 }) {
   function addGroup() {
     let i = 1
@@ -305,6 +331,19 @@ function GroupsTab({
           total={groups.length}
           targets={['DIRECT', 'REJECT', ...groups.filter((x) => x.name && x !== g).map((x) => x.name!)]}
           providers={Object.keys(providers)}
+          onRename={(nv) => {
+            const old = g.name ?? ''
+            if (!nv || nv === old) return
+            if (groups.some((x) => x !== g && x.name === nv)) {
+              showToast('Имя группы занято', 'error')
+              return
+            }
+            g.name = nv
+            // обновить все ссылки на старое имя (правила + members других групп),
+            // иначе mihomo упадёт с "proxy [...] not found"
+            renameGroupEverywhere(doc, old, nv)
+            rerender()
+          }}
           onMove={(dir) => {
             const j = gi + dir
             if (j < 0 || j >= groups.length) return
@@ -328,6 +367,7 @@ function GroupCard({
   total,
   targets,
   providers,
+  onRename,
   onMove,
   onDelete,
   rerender,
@@ -337,6 +377,7 @@ function GroupCard({
   total: number
   targets: string[]
   providers: string[]
+  onRename: (nv: string) => void
   onMove: (dir: number) => void
   onDelete: () => void
   rerender: () => void
@@ -362,14 +403,13 @@ function GroupCard({
             {group.type ?? 'select'}
           </span>
           <Input
+            key={group.name}
             className="h-8 w-44 font-medium"
-            value={group.name ?? ''}
+            defaultValue={group.name ?? ''}
             placeholder="Имя группы"
-            onChange={(e) => {
-              group.name = e.target.value
-              rerender()
-            }}
+            onBlur={(e) => onRename(e.target.value.trim())}
           />
+          <span className="text-muted-foreground hidden text-[11px] sm:inline">⏎ применить</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Button variant="outline" size="icon-sm" disabled={index === 0} onClick={() => onMove(-1)}>
@@ -874,6 +914,9 @@ function RuleCard({
               ))}
               <SelectItem value="DIRECT">DIRECT</SelectItem>
               <SelectItem value="REJECT">REJECT</SelectItem>
+              {route && route !== 'DIRECT' && route !== 'REJECT' && !selectorNames.includes(route) && (
+                <SelectItem value={route}>{route} (не найден!)</SelectItem>
+              )}
             </SelectContent>
           </Select>
           <span className="text-muted-foreground w-full text-xs leading-snug">
