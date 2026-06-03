@@ -55,13 +55,6 @@ const guiSettings: ToggleSetting[] = [
 
 const updateSettings: ToggleSetting[] = [
   {
-    id: 'auto-ui',
-    key: 'autoCheckUI',
-    path: 'updater.auto_check_ui',
-    title: 'Автопроверка (панель)',
-    description: 'Фоновая проверка обновлений панели с интервалом в 4 часа',
-  },
-  {
     id: 'auto-core',
     key: 'autoCheckCore',
     path: 'updater.auto_check_core',

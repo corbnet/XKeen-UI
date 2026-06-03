@@ -57,7 +57,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "data-[variant=destructive]:text-destructive data-[variant=destructive]:*:[svg]:text-destructive data-[variant=destructive]:focus:text-destructive group/dropdown-menu-item relative flex items-center gap-2 rounded-sm px-1.5 py-1.25 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#60a5fa] not-data-[variant=destructive]:focus:**:text-[#60a5fa] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#60a5fa] not-data-[variant=destructive]:data-highlighted:**:text-[#60a5fa] data-inset:pl-8 data-[variant=destructive]:focus:bg-(--menu-destructive-active-bg) [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-[variant=destructive]:text-destructive data-[variant=destructive]:*:[svg]:text-destructive data-[variant=destructive]:focus:text-destructive group/dropdown-menu-item relative flex items-center gap-2 rounded-sm px-1.5 py-1.25 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#f0883e] not-data-[variant=destructive]:focus:**:text-[#f0883e] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#f0883e] not-data-[variant=destructive]:data-highlighted:**:text-[#f0883e] data-inset:pl-8 data-[variant=destructive]:focus:bg-(--menu-destructive-active-bg) [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -79,7 +79,7 @@ function DropdownMenuCheckboxItem({
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#60a5fa] focus:**:text-[#60a5fa] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#60a5fa] data-highlighted:**:text-[#60a5fa] data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#f0883e] focus:**:text-[#f0883e] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#f0883e] data-highlighted:**:text-[#f0883e] data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       checked={checked}
@@ -115,7 +115,7 @@ function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#60a5fa] focus:**:text-[#60a5fa] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#60a5fa] data-highlighted:**:text-[#60a5fa] data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#f0883e] focus:**:text-[#f0883e] data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#f0883e] data-highlighted:**:text-[#f0883e] data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -159,7 +159,7 @@ function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<'spa
     <span
       data-slot="dropdown-menu-shortcut"
       className={cn(
-        'text-muted-foreground ml-auto text-xs tracking-widest group-focus/dropdown-menu-item:font-semibold group-focus/dropdown-menu-item:text-[#60a5fa]',
+        'text-muted-foreground ml-auto text-xs tracking-widest group-focus/dropdown-menu-item:font-semibold group-focus/dropdown-menu-item:text-[#f0883e]',
         className
       )}
       {...props}
@@ -184,7 +184,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "flex cursor-default items-center gap-2 rounded-sm px-1.5 py-1.25 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#60a5fa] not-data-[variant=destructive]:focus:**:text-[#60a5fa] data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#60a5fa] not-data-[variant=destructive]:data-highlighted:**:text-[#60a5fa] data-inset:pl-8 data-open:bg-(--menu-active-bg) data-open:font-semibold data-open:text-[#60a5fa] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex cursor-default items-center gap-2 rounded-sm px-1.5 py-1.25 text-sm outline-hidden select-none focus:bg-(--menu-active-bg) focus:font-semibold focus:text-[#f0883e] not-data-[variant=destructive]:focus:**:text-[#f0883e] data-highlighted:bg-(--menu-active-bg) data-highlighted:font-semibold data-highlighted:text-[#f0883e] not-data-[variant=destructive]:data-highlighted:**:text-[#f0883e] data-inset:pl-8 data-open:bg-(--menu-active-bg) data-open:font-semibold data-open:text-[#f0883e] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

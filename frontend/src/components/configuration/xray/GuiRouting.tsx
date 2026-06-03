@@ -314,7 +314,7 @@ export function GuiRouting({ editorRef, configs, activeConfigIndex }: Props) {
             50
           )
         }}
-        className="text-muted-foreground border-ring/60 hover:border-chart-2 mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-3 py-2.5 text-sm font-medium transition-colors hover:border-solid hover:text-[#60a5fa]"
+        className="text-muted-foreground border-ring/60 hover:border-chart-2 mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-3 py-2.5 text-sm font-medium transition-colors hover:border-solid hover:text-[#f0883e]"
       >
         <IconPlus size={17} /> Добавить правило
       </button>
@@ -441,7 +441,7 @@ const RuleCard = memo(
         style={{ background: 'var(--color-input-background)' }}
         className={cn(
           'flex flex-col gap-2 rounded-xl border p-3 transition-all duration-150 select-none',
-          isDragging ? 'scale-[0.99] border-[#60a5fa] opacity-80' : 'border-border'
+          isDragging ? 'scale-[0.99] border-[#f0883e] opacity-80' : 'border-border'
         )}
       >
         {/* Header */}
@@ -456,7 +456,7 @@ const RuleCard = memo(
           >
             <IconGripVertical size={19} />
           </div>
-          <Badge variant="outline" className="h-6 w-6 rounded-md border-blue-500/20 bg-blue-500/10 p-3.5 px-4 text-blue-400">
+          <Badge variant="outline" className="h-6 w-6 rounded-md border-orange-500/20 bg-orange-500/10 p-3.5 px-4 text-orange-400">
             #{index + 1}
           </Badge>
           {editingName ? (
@@ -555,8 +555,8 @@ const RuleCard = memo(
                           i: 'text-purple-400/25 bg-purple-400/3 border-none rounded-sm hover:bg-purple-400/15',
                         },
                         network: {
-                          a: 'text-blue-400 bg-blue-400/15 border-none rounded-sm',
-                          i: 'text-blue-400/25 bg-blue-400/3 border-none rounded-sm hover:bg-blue-400/15',
+                          a: 'text-orange-400 bg-orange-400/15 border-none rounded-sm',
+                          i: 'text-orange-400/25 bg-orange-400/3 border-none rounded-sm hover:bg-orange-400/15',
                         },
                       }
                       const c = colors[fieldName] || {
@@ -640,11 +640,11 @@ const RuleCard = memo(
           <Select value={outboundType} onValueChange={(v) => switchOutbound(v as 'outboundTag' | 'balancerTag')}>
             <SelectTrigger
               popper
-              className="min-w-34 shrink-0 border-blue-500/40 text-[13px] font-bold text-blue-400 transition-colors hover:bg-blue-500/10 [&>svg]:text-blue-400/60"
+              className="min-w-34 shrink-0 border-orange-500/40 text-[13px] font-bold text-orange-400 transition-colors hover:bg-orange-500/10 [&>svg]:text-orange-400/60"
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent position="popper" className="border-blue-500/40">
+            <SelectContent position="popper" className="border-orange-500/40">
               <SelectGroup>
                 <SelectItem value="outboundTag" className="text-[13px] font-medium">
                   outboundTag
@@ -659,11 +659,11 @@ const RuleCard = memo(
           <Select value={outboundValue} onValueChange={changeOutboundValue}>
             <SelectTrigger
               popper
-              className="flex-1 border-blue-500/40 text-[13px] transition-colors hover:bg-blue-500/10 [&>svg]:text-blue-400/60"
+              className="flex-1 border-orange-500/40 text-[13px] transition-colors hover:bg-orange-500/10 [&>svg]:text-orange-400/60"
             >
               <SelectValue placeholder="Выберите outbound..." />
             </SelectTrigger>
-            <SelectContent position="popper" className="border-blue-500/40">
+            <SelectContent position="popper" className="border-orange-500/40">
               <SelectGroup>
                 {(isBalancer ? available.balancers : available.outbounds).length === 0 ? (
                   <div className="text-muted-foreground px-2 py-1.5 text-xs">
@@ -738,7 +738,7 @@ function BadgeInput({ badges, placeholder, fieldType, onAdd, onRemove, onRemoveF
     fieldType === 'domain'
       ? 'text-red-400 bg-red-400/15 border-none rounded-sm'
       : fieldType === 'ip'
-        ? 'text-blue-400 bg-blue-400/15 border-none rounded-sm'
+        ? 'text-orange-400 bg-orange-400/15 border-none rounded-sm'
         : fieldType === 'sourceIP'
           ? 'text-purple-400 bg-purple-400/15 border-none rounded-sm'
           : 'text-yellow-400 bg-yellow-400/15 border-none rounded-sm'

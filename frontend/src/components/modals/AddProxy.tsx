@@ -169,7 +169,7 @@ export function ImportModal({ onGenerate, onAddToConfig }: Props) {
               <div className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
                 {/* Хедер результата */}
                 <div className="border-border bg-muted/30 flex w-full shrink-0 items-center justify-between border-b px-3 py-1">
-                  <Badge className="bg-blue-500/10! px-2 pt-2.25 pb-2.5 text-[10px] tracking-wider text-blue-400">{result.protocol}</Badge>
+                  <Badge className="bg-orange-500/10! px-2 pt-2.25 pb-2.5 text-[10px] tracking-wider text-orange-400">{result.protocol}</Badge>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon-sm" onClick={copy}>

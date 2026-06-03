@@ -52,6 +52,7 @@ const ConnectionsPanel = lazyLoad(() => import('./mihomo/Connections'), 'Connect
 const ProvidersModal = lazyLoad(() => import('../modals/Providers'), 'ProvidersModal')
 const BackupsModal = lazyLoad(() => import('../modals/Backups'), 'BackupsModal')
 const SelectorsPanel = lazyLoad(() => import('./mihomo/Selectors'), 'SelectorsPanel')
+const ConfigEditorModal = lazyLoad(() => import('./mihomo/ConfigEditor'), 'ConfigEditorModal')
 const CodeMirrorEditorLazy = lazyLoad(() => import('./CodeMirror'), 'CodeMirrorEditor')
 
 type ClashMode = 'rule' | 'global' | 'direct'
@@ -294,6 +295,8 @@ export function ConfigPanel({ onOpenImport, onOpenTemplate, onOpenGeoScan, onRef
   const mountProvidersModal = useLazyMount(isProvidersModalOpen)
   const [isBackupsModalOpen, setIsBackupsModalOpen] = useState(false)
   const mountBackupsModal = useLazyMount(isBackupsModalOpen)
+  const [isConfigEditorOpen, setIsConfigEditorOpen] = useState(false)
+  const mountConfigEditor = useLazyMount(isConfigEditorOpen)
   const currentPanel = isRunning ? activePanel : 'config'
 
   const configsRef = useRef(configs)
@@ -635,6 +638,10 @@ export function ConfigPanel({ onOpenImport, onOpenTemplate, onOpenGeoScan, onRef
                   <IconListDetails data-icon="inline-start" />
                   Пров. прокси
                 </Button>
+                <Button variant="outline" className="text-[13px]" onClick={() => setIsConfigEditorOpen(true)}>
+                  <IconPencil data-icon="inline-start" />
+                  Редактор YAML
+                </Button>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -886,6 +893,11 @@ export function ConfigPanel({ onOpenImport, onOpenTemplate, onOpenGeoScan, onRef
               onOpenChange={handleBackupsModalOpenChange}
               onRefreshConfigs={refreshConfigsAndEditor}
             />
+          </LazyBoundary>
+        )}
+        {mountConfigEditor && (
+          <LazyBoundary>
+            <ConfigEditorModal open={isConfigEditorOpen} onOpenChange={setIsConfigEditorOpen} />
           </LazyBoundary>
         )}
       </>

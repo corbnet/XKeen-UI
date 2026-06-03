@@ -206,10 +206,10 @@ const ProxyCard = memo(function ProxyCard({
         isFixed
           ? 'border-purple-400 bg-linear-to-b from-purple-500/25 to-purple-500/15'
           : isActive
-            ? 'border-[#60a5fa] bg-linear-to-b from-blue-500/25 to-blue-500/15'
+            ? 'border-[#f0883e] bg-linear-to-b from-orange-500/25 to-orange-500/15'
             : selectionDisabled
               ? 'border-ring/35 bg-[linear-gradient(135deg,rgba(148,163,184,0.08)_0%,transparent_55%)]'
-              : 'border-ring/40 bg-[linear-gradient(135deg,rgba(59,130,246,0.05)_0%,transparent_50%)] hover:border-[#60a5fa] hover:bg-linear-to-b hover:from-blue-500/15 hover:to-blue-500/5'
+              : 'border-ring/40 bg-[linear-gradient(135deg,rgba(240, 136, 62,0.05)_0%,transparent_50%)] hover:border-[#f0883e] hover:bg-linear-to-b hover:from-orange-500/15 hover:to-orange-500/5'
       )}
       onClick={() => !selectionDisabled && onSelect(selectorName, proxyName)}
     >

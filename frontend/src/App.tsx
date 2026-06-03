@@ -186,7 +186,6 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
         }
 
         if (!showUpdateToast) return
-        if (data.show_toast?.app) showToast({ title: 'Доступно обновление', body: 'Доступна новая версия XKeen UI', persistent: true })
         if (data.show_toast?.core)
           showToast({
             title: 'Доступно обновление',
@@ -413,10 +412,6 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
             onOpenCoreManage={() => openModal('showCoreManageModal')}
             onOpenSettings={() => openModal('showSettingsModal')}
             onRefreshStatus={() => void checkStatus()}
-            onOpenUpdate={(core: string) => {
-              dispatch({ type: 'SET_UPDATE_MODAL_CORE', core })
-              openModal('showUpdateModal')
-            }}
             onLogout={logout}
           />
           <ConfigPanel

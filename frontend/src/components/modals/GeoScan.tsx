@@ -168,7 +168,7 @@ export function GeoScanModal() {
             variant="outline"
             className={cn(
               'h-6 w-6 rounded-full p-0 text-xs',
-              geoType === 'domain' ? 'border-red-500/20 bg-red-500/10 text-red-400' : 'border-blue-500/20 bg-blue-500/10 text-blue-400'
+              geoType === 'domain' ? 'border-red-500/20 bg-red-500/10 text-red-400' : 'border-orange-500/20 bg-orange-500/10 text-orange-400'
             )}
           >
             {currentFiles.length}
@@ -230,7 +230,7 @@ export function GeoScanModal() {
                               'h-6 cursor-pointer rounded-sm border-none p-2 pt-2.5 text-[11px] tracking-wide transition-colors',
                               geoType === 'domain'
                                 ? 'bg-red-400/15 text-red-400 hover:bg-red-400/25'
-                                : 'bg-blue-400/15 text-blue-400 hover:bg-blue-400/25'
+                                : 'bg-orange-400/15 text-orange-400 hover:bg-orange-400/25'
                             )}
                           >
                             {cat}

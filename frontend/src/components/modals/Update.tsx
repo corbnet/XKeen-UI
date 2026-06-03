@@ -35,7 +35,7 @@ const mdClass = `
   [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[10px] [&_code]:font-mono [&_code]:wrap-anywhere
   [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:mb-2 [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:max-w-full
   [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:break-normal
-  [&_a]:text-blue-400 [&_a]:underline [&_a]:underline-offset-2 [&_a]:wrap-anywhere
+  [&_a]:text-orange-400 [&_a]:underline [&_a]:underline-offset-2 [&_a]:wrap-anywhere
   [&_strong]:text-foreground [&_strong]:font-semibold
   [&_hr]:border-ring/20 [&_hr]:my-2
   [&_blockquote]:border-l-2 [&_blockquote]:border-ring/40 [&_blockquote]:pl-3 [&_blockquote]:italic
@@ -221,7 +221,7 @@ export function UpdateModal({ onInstalled }: { onInstalled: () => void }) {
                     </Badge>
                   )}
                   {!loading && releases.length > 0 && (
-                    <Badge variant="outline" className="h-6 w-6 rounded-full border-blue-500/20 bg-blue-500/10 text-blue-400">
+                    <Badge variant="outline" className="h-6 w-6 rounded-full border-orange-500/20 bg-orange-500/10 text-orange-400">
                       {releases.length}
                     </Badge>
                   )}
@@ -274,8 +274,8 @@ export function UpdateModal({ onInstalled }: { onInstalled: () => void }) {
                       className={cn(
                         'rounded-lg border transition-all',
                         checked
-                          ? 'border-[#60a5fa] bg-linear-to-b from-blue-500/25 to-blue-500/15'
-                          : 'border-ring/40 bg-[linear-gradient(135deg,rgba(59,130,246,0.05)_0%,transparent_50%)] hover:border-[#60a5fa] hover:bg-linear-to-b hover:from-blue-500/15 hover:to-blue-500/5'
+                          ? 'border-[#f0883e] bg-linear-to-b from-orange-500/25 to-orange-500/15'
+                          : 'border-ring/40 bg-[linear-gradient(135deg,rgba(240, 136, 62,0.05)_0%,transparent_50%)] hover:border-[#f0883e] hover:bg-linear-to-b hover:from-orange-500/15 hover:to-orange-500/5'
                       )}
                     >
                       <AccordionTrigger
@@ -332,8 +332,8 @@ export function UpdateModal({ onInstalled }: { onInstalled: () => void }) {
                       className={cn(
                         'flex cursor-pointer items-start justify-between gap-3 rounded-lg border px-3 py-2.5 transition-all',
                         checked
-                          ? 'border-[#60a5fa] bg-linear-to-b from-blue-500/25 to-blue-500/15'
-                          : 'border-ring/40 bg-[linear-gradient(135deg,rgba(59,130,246,0.05)_0%,transparent_50%)] from-blue-500/15 to-blue-500/5 hover:border-[#60a5fa] hover:bg-linear-to-b'
+                          ? 'border-[#f0883e] bg-linear-to-b from-orange-500/25 to-orange-500/15'
+                          : 'border-ring/40 bg-[linear-gradient(135deg,rgba(240, 136, 62,0.05)_0%,transparent_50%)] from-orange-500/15 to-orange-500/5 hover:border-[#f0883e] hover:bg-linear-to-b'
                       )}
                     >
                       <span className="truncate text-sm font-medium">{release.name || release.version}</span>

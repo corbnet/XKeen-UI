@@ -74,7 +74,7 @@ export function TemplateModal({ onImport }: { onImport: (url: string) => Promise
             <span>
               Выберите готовый шаблон конфигурации для <span className="text-chart-2 font-semibold">{capitalize(currentCore)}</span>
             </span>
-            {!loading && <Badge className="h-6 w-6 rounded-full border-blue-500/20 bg-blue-500/10 text-blue-400">{templates.length}</Badge>}
+            {!loading && <Badge className="h-6 w-6 rounded-full border-orange-500/20 bg-orange-500/10 text-orange-400">{templates.length}</Badge>}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,8 +95,8 @@ export function TemplateModal({ onImport }: { onImport: (url: string) => Promise
                   className={cn(
                     'flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3.5 transition-all',
                     selectedUrl === template.url
-                      ? 'border-[#60a5fa] bg-linear-to-b from-blue-500/25 to-blue-500/15'
-                      : 'border-ring/40 bg-[linear-gradient(135deg,rgba(59,130,246,0.05)_0%,transparent_50%)] from-blue-500/15 to-blue-500/5 hover:border-[#60a5fa] hover:bg-linear-to-b'
+                      ? 'border-[#f0883e] bg-linear-to-b from-orange-500/25 to-orange-500/15'
+                      : 'border-ring/40 bg-[linear-gradient(135deg,rgba(240, 136, 62,0.05)_0%,transparent_50%)] from-orange-500/15 to-orange-500/5 hover:border-[#f0883e] hover:bg-linear-to-b'
                   )}
                 >
                   <RadioGroupItem value={template.url} id={`tpl-${i}`} className="shrink-0" />

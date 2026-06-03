@@ -360,7 +360,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          className="hover:bg-transparent! hover:text-blue-400"
+                          className="hover:bg-transparent! hover:text-orange-400"
                           onClick={updateAllProviders}
                           disabled={loading || reloading || updatingAll || !httpProviderNames.length}
                         >
@@ -378,7 +378,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                           <TableCell className="max-w-72">
                             <div className="flex items-center gap-2">
                               <div className="truncate font-medium">{provider.name}</div>
-                              <Badge variant="ghost" className="rounded-full border-none bg-blue-500/10! px-2 text-xs text-blue-400!">
+                              <Badge variant="ghost" className="rounded-full border-none bg-orange-500/10! px-2 text-xs text-orange-400!">
                                 {provider.proxies?.length ?? 0}
                               </Badge>
                             </div>
@@ -392,7 +392,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                                   ? 'bg-green-500/10! text-green-400!'
                                   : normalizeVehicleType(provider.vehicleType) === 'FILE'
                                     ? 'bg-orange-500/10! text-orange-400!'
-                                    : 'bg-blue-500/10! text-blue-400!'
+                                    : 'bg-orange-500/10! text-orange-400!'
                               )}
                             >
                               {formatVehicleType(provider.vehicleType)}
@@ -408,7 +408,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                               <Button
                                 variant="ghost"
                                 size="icon-xs"
-                                className="hover:bg-transparent! hover:text-blue-400"
+                                className="hover:bg-transparent! hover:text-orange-400"
                                 onClick={() => updateProvider(provider.name, provider.vehicleType)}
                                 disabled={!!updatingName}
                               >
@@ -434,7 +434,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          className="hover:bg-transparent! hover:text-blue-400"
+                          className="hover:bg-transparent! hover:text-orange-400"
                           onClick={updateAllProviders}
                           disabled={loading || reloading || updatingAll || !httpProviderNames.length}
                         >
@@ -454,14 +454,14 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                           <TableCell className="max-w-84">
                             <div className="flex items-center gap-2">
                               <div className="truncate font-medium">{provider.name}</div>
-                              <Badge variant="ghost" className="rounded-full border-none bg-blue-500/10! px-2 text-xs text-blue-400!">
+                              <Badge variant="ghost" className="rounded-full border-none bg-orange-500/10! px-2 text-xs text-orange-400!">
                                 {provider.ruleCount ?? 0}
                               </Badge>
                             </div>
                           </TableCell>
                           <TableCell>
                             {hasFormat ? (
-                              <Badge variant="ghost" className="rounded-full border-none bg-blue-500/10! px-2 text-xs text-blue-400!">
+                              <Badge variant="ghost" className="rounded-full border-none bg-orange-500/10! px-2 text-xs text-orange-400!">
                                 {FORMAT_LABELS[provider.format ?? ''] ?? provider.format}
                               </Badge>
                             ) : null}
@@ -482,7 +482,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                               <Button
                                 variant="ghost"
                                 size="icon-xs"
-                                className="hover:bg-transparent! hover:text-blue-400"
+                                className="hover:bg-transparent! hover:text-orange-400"
                                 onClick={() => viewProviderContent(provider)}
                                 disabled={!!viewingName || !!updatingName}
                               >
@@ -492,7 +492,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
                                 <Button
                                   variant="ghost"
                                   size="icon-xs"
-                                  className="hover:bg-transparent! hover:text-blue-400"
+                                  className="hover:bg-transparent! hover:text-orange-400"
                                   onClick={() => updateProvider(provider.name, provider.vehicleType)}
                                   disabled={!!updatingName}
                                 >
@@ -523,7 +523,7 @@ export function ProvidersModal({ open, kind, clashApiPort, clashApiSecret, clash
               <DialogTitle className="flex items-center gap-2 pr-8 pb-3">
                 <IconEye size={20} className="text-chart-2" />
                 {viewContent?.name}
-                <Badge variant="ghost" className="rounded-full border-none bg-blue-500/10! px-2 text-xs text-blue-400!">
+                <Badge variant="ghost" className="rounded-full border-none bg-orange-500/10! px-2 text-xs text-orange-400!">
                   {viewContent?.content.split('\n').filter(Boolean).length ?? 0}
                 </Badge>
               </DialogTitle>

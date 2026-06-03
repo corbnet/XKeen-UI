@@ -14,17 +14,15 @@ export function StatusBar({
   onOpenCoreManage,
   onOpenSettings,
   onRefreshStatus,
-  onOpenUpdate,
   onLogout,
 }: {
   onOpenCoreManage: () => void
   onOpenSettings: () => void
   onRefreshStatus: () => void
-  onOpenUpdate: (core: string) => void
   onLogout: () => void
 }) {
   const { state, dispatch, showToast } = useAppContext({ includeSettings: true })
-  const { serviceStatus, pendingText, currentCore, coreVersions, isConfigsLoading, version, isOutdatedUI, isOutdatedCore, settings } = state
+  const { serviceStatus, pendingText, currentCore, coreVersions, isConfigsLoading, version, isOutdatedCore, settings } = state
   const authEnabled = settings.authEnabled
 
   const isRunning = serviceStatus === 'running'
@@ -157,7 +155,7 @@ export function StatusBar({
             rel="noreferrer"
             className="rounded-md transition-opacity hover:opacity-85"
           >
-            <AuroraText className="animate-dark-glow text-[28px] font-semibold" colors={['#00D3F2', '#2B7FFF', '#155DFC']}>
+            <AuroraText className="animate-dark-glow text-[28px] font-semibold" colors={['#ffb877', '#f0883e', '#d9772f']}>
               XKeen UI
             </AuroraText>
           </a>
@@ -177,8 +175,8 @@ export function StatusBar({
                   )}
                   {isOutdatedCore && (
                     <span className="relative mb-3 -ml-0.75 flex">
-                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                      <span className="relative inline-flex size-1.75 rounded-full bg-blue-500" />
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-orange-400 opacity-75" />
+                      <span className="relative inline-flex size-1.75 rounded-full bg-orange-500" />
                     </span>
                   )}
                 </Button>
@@ -191,20 +189,15 @@ export function StatusBar({
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenUpdate('self')}
-                  className={cn(
-                    'relative overflow-hidden text-xs tracking-wider',
-                    isOutdatedUI ? 'border-none! text-cyan-300 hover:text-cyan-300' : ''
-                  )}
+                <div
+                  className="border-input bg-input-background text-muted-foreground flex h-9 cursor-default items-center gap-1.5 rounded-md border px-3 text-xs tracking-wider select-none"
+                  aria-label="Версия XKeen UI"
                 >
-                  {isOutdatedUI && <ShineBorder duration={7} borderWidth={2} shineColor={['#00D3F2', '#2B7FFF', '#155DFC']} />}
-                  <IconBox data-icon="inline-start" className="size-4.5" />
+                  <IconBox className="size-4.5" />
                   {version}
-                </Button>
+                </div>
               </TooltipTrigger>
-              <TooltipContent>{isOutdatedUI ? 'Доступно обновление' : 'Версия XKeen UI'}</TooltipContent>
+              <TooltipContent>Версия XKeen UI</TooltipContent>
             </Tooltip>
           )}
           {isConfigsLoading || !version ? (

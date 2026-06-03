@@ -230,7 +230,7 @@ function PathButton({ label, active, onClick }: { label: string; active: boolean
       className={cn(
         'h-11 cursor-pointer truncate rounded-lg border px-4 text-sm font-medium transition-all',
         active
-          ? 'border-chart-2 bg-blue-500/10 text-blue-400'
+          ? 'border-chart-2 bg-orange-500/10 text-orange-400'
           : 'border-border bg-card text-muted-foreground hover:border-chart-2 hover:text-foreground'
       )}
     >
