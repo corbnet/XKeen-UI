@@ -459,6 +459,20 @@ export function ConfigPanel({ onOpenImport, onOpenTemplate, onOpenGeoScan, onRef
     return nextConfigs
   }, [activeConfigFile, loadConfigIntoEditor, onRefreshConfigs, saveViewState])
 
+  // Перезапуск ядра после правок из структурного редактора config.yaml.
+  // Правки групп/правил/провайдеров не меняют порты (listeners/tproxy-port),
+  // поэтому достаточно softRestart (горячая перезагрузка конфига).
+  const restartCore = useCallback(async () => {
+    dispatch({ type: 'SET_SERVICE_STATUS', status: 'pending', pendingText: 'Перезапуск...' })
+    const r = await apiCall<{ success: boolean; error?: string }>('POST', 'control', {
+      action: 'softRestart',
+      core: currentCore,
+    })
+    showToast(r?.success ? 'Изменения применены' : `Ошибка: ${r?.error}`, r?.success ? 'success' : 'error')
+    dispatch({ type: 'SET_SERVICE_STATUS', status: r?.success ? 'running' : 'stopped' })
+    if (r?.success) syncClashApiPort(200)
+  }, [currentCore, dispatch, showToast])
+
   const switchTab = useCallback(
     (index: number) => {
       if (index === activeIndexRef.current) return
@@ -897,7 +911,12 @@ export function ConfigPanel({ onOpenImport, onOpenTemplate, onOpenGeoScan, onRef
         )}
         {mountConfigEditor && (
           <LazyBoundary>
-            <ConfigEditorModal open={isConfigEditorOpen} onOpenChange={setIsConfigEditorOpen} />
+            <ConfigEditorModal
+              open={isConfigEditorOpen}
+              onOpenChange={setIsConfigEditorOpen}
+              onSaved={refreshConfigsAndEditor}
+              onApply={restartCore}
+            />
           </LazyBoundary>
         )}
       </>

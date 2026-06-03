@@ -4,6 +4,7 @@ import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   IconChevronDown,
@@ -12,11 +13,13 @@ import {
   IconGripVertical,
   IconPlus,
   IconPlugX,
+  IconReload,
+  IconRoute,
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
 import * as jsyaml from 'js-yaml'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiCall } from '../../../lib/api'
 import { useAppContext } from '../../../lib/store'
 
@@ -47,12 +50,69 @@ interface MihomoDoc {
   'proxy-groups'?: ProxyGroup[]
   'proxy-providers'?: Record<string, Record<string, unknown>>
   'rule-providers'?: Record<string, Record<string, unknown>>
+  rules?: string[]
   [k: string]: unknown
 }
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSaved?: () => void | Promise<unknown>
+  onApply?: () => void | Promise<unknown>
+}
+
+const NO_ROUTE = '__none__'
+
+/* Найти индекс простого правила RULE-SET для данного списка.
+   Формат: "RULE-SET,<provider>,<target>[,no-resolve]".
+   Сложные правила (AND/OR/...) не трогаем. */
+function findRuleSetIndex(rules: string[], provider: string): number {
+  return rules.findIndex((r) => {
+    const parts = String(r).split(',')
+    return parts[0]?.trim() === 'RULE-SET' && parts[1]?.trim() === provider
+  })
+}
+
+/* Текущий селектор (target) для списка, либо null если правила нет. */
+function getRouteTarget(rules: string[], provider: string): string | null {
+  const i = findRuleSetIndex(rules, provider)
+  if (i < 0) return null
+  const parts = String(rules[i]).split(',')
+  // target = всё после второй запятой, без хвоста no-resolve
+  const rest = parts.slice(2).join(',').trim()
+  return rest.replace(/,no-resolve$/i, '').trim() || null
+}
+
+/* Установить/обновить/удалить правило RULE-SET для списка.
+   target === NO_ROUTE → удалить правило. Иначе вставить/обновить.
+   Вставка — перед последним MATCH (или в конец, если MATCH нет). */
+function setRoute(doc: MihomoDoc, provider: string, target: string) {
+  const rules = doc.rules ?? (doc.rules = [])
+  const idx = findRuleSetIndex(rules, provider)
+  if (target === NO_ROUTE) {
+    if (idx >= 0) rules.splice(idx, 1)
+    return
+  }
+  const line = `RULE-SET,${provider},${target}`
+  if (idx >= 0) {
+    rules[idx] = line
+  } else {
+    const matchIdx = rules.findIndex((r) => String(r).split(',')[0]?.trim() === 'MATCH')
+    if (matchIdx >= 0) rules.splice(matchIdx, 0, line)
+    else rules.push(line)
+  }
+}
+
+/* Переименовать список во всех ссылающихся правилах RULE-SET. */
+function renameRoute(doc: MihomoDoc, oldName: string, newName: string) {
+  const rules = doc.rules ?? []
+  for (let i = 0; i < rules.length; i++) {
+    const parts = String(rules[i]).split(',')
+    if (parts[0]?.trim() === 'RULE-SET' && parts[1]?.trim() === oldName) {
+      parts[1] = newName
+      rules[i] = parts.join(',')
+    }
+  }
 }
 
 function dumpYaml(doc: MihomoDoc): string {
@@ -63,10 +123,11 @@ function dumpYaml(doc: MihomoDoc): string {
   return jsyaml.dump(clone, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, sortKeys: false })
 }
 
-export function ConfigEditorModal({ open, onOpenChange }: Props) {
+export function ConfigEditorModal({ open, onOpenChange, onSaved, onApply }: Props) {
   const { showToast } = useAppContext()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [applying, setApplying] = useState(false)
   const [error, setError] = useState(false)
   const [tab, setTab] = useState('groups')
   const [doc, setDoc] = useState<MihomoDoc | null>(null)
@@ -80,7 +141,12 @@ export function ConfigEditorModal({ open, onOpenChange }: Props) {
     setError(false)
     try {
       const res = await apiCall<{ success: boolean; configs?: { file: string; content: string }[] }>('GET', 'configs?core=mihomo')
-      const main = res.configs?.find((c) => c.file.endsWith('.yaml') || c.file.endsWith('.yml'))
+      const yamls = (res.configs ?? []).filter((c) => c.file.endsWith('.yaml') || c.file.endsWith('.yml'))
+      // основной конфиг mihomo: тот, где есть proxy-groups/rules, а не proxy_providers/*.yaml
+      const main =
+        yamls.find((c) => /proxy-groups\s*:/.test(c.content) || /^rules\s*:/m.test(c.content)) ??
+        yamls.find((c) => !/proxy_providers\//.test(c.file)) ??
+        yamls[0]
       if (!main) throw new Error('no config')
       const parsed = (jsyaml.load(main.content) ?? {}) as MihomoDoc
       parsed['proxy-groups'] ??= []
@@ -99,50 +165,82 @@ export function ConfigEditorModal({ open, onOpenChange }: Props) {
     if (open) load()
   }, [open, load])
 
+  // Возвращает true при успешной записи на диск.
+  async function writeConfig(): Promise<boolean> {
+    if (!doc) return false
+    const content = dumpYaml(doc)
+    const res = await apiCall<{ success: boolean; error?: string }>('PUT', 'configs', { file: fileRef.current, content })
+    if (!res.success) {
+      showToast('Ошибка сохранения: ' + (res.error || ''), 'error')
+      return false
+    }
+    // Перезагрузить редактор/состояние панели, иначе её текстовый редактор
+    // хранит старое содержимое и при сохранении перезапишет наши правки.
+    await onSaved?.()
+    return true
+  }
+
   async function save() {
-    if (!doc) return
     setSaving(true)
     try {
-      const content = dumpYaml(doc)
-      const res = await apiCall<{ success: boolean; error?: string }>('PUT', 'configs', { file: fileRef.current, content })
-      if (!res.success) throw new Error(res.error || 'save failed')
-      showToast('config.yaml сохранён. Перезапустите ядро, чтобы применить.', 'success')
-      onOpenChange(false)
-    } catch (e) {
-      showToast('Ошибка сохранения: ' + (e instanceof Error ? e.message : ''), 'error')
+      if (await writeConfig()) {
+        showToast('config.yaml сохранён. Перезапустите ядро, чтобы применить.', 'success')
+        onOpenChange(false)
+      }
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function saveAndApply() {
+    setApplying(true)
+    try {
+      if (await writeConfig()) {
+        onOpenChange(false)
+        await onApply?.() // мягкий перезапуск ядра (тосты показывает панель)
+      }
+    } finally {
+      setApplying(false)
     }
   }
 
   const groups = doc?.['proxy-groups'] ?? []
   const providers = doc?.['proxy-providers'] ?? {}
   const ruleProviders = doc?.['rule-providers'] ?? {}
-  const inlineRuleNames = useMemo(
-    () => Object.keys(ruleProviders).filter((k) => (ruleProviders[k] as { type?: string })?.type === 'inline'),
-    [ruleProviders]
+  const inlineRuleNames = Object.keys(ruleProviders).filter(
+    (k) => (ruleProviders[k] as { type?: string })?.type === 'inline'
   )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[88vh] w-[min(960px,94vw)] max-w-none flex-col gap-0 overflow-hidden p-0">
-        <DialogHeader className="flex flex-row items-center justify-between gap-4 border-b border-border px-5 py-4">
-          <DialogTitle className="text-base">Редактор config.yaml</DialogTitle>
-          <div className="flex items-center gap-2 pr-6">
+      <DialogContent className="flex h-[90vh] max-h-[90vh] w-[min(1000px,96vw)] max-w-none flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="flex flex-col gap-3 border-b border-border px-5 py-4">
+          <DialogTitle className="pr-8 text-base">Редактор config.yaml</DialogTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <Tabs value={tab} onValueChange={setTab}>
-              <TabsList>
+              <TabsList className="flex-wrap">
                 <TabsTrigger value="groups">Селекторы</TabsTrigger>
                 <TabsTrigger value="subs">Подписки</TabsTrigger>
                 <TabsTrigger value="rules">Сайты и IP</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Button size="sm" onClick={save} disabled={saving || loading || error || !doc}>
-              {saving ? <Spinner className="size-4" /> : <IconDeviceFloppy size={15} />} Сохранить
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={save}
+                disabled={saving || applying || loading || error || !doc}
+              >
+                {saving ? <Spinner className="size-4" /> : <IconDeviceFloppy size={15} />} Сохранить
+              </Button>
+              <Button size="sm" onClick={saveAndApply} disabled={saving || applying || loading || error || !doc || !onApply}>
+                {applying ? <Spinner className="size-4" /> : <IconReload size={15} />} Сохранить и применить
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
-        <div className="scrollbar-thin flex-1 overflow-y-auto p-5">
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
           {loading ? (
             <div className="text-muted-foreground flex items-center justify-center py-20 text-sm">
               <Spinner className="mr-2 size-5" /> Загрузка...
@@ -166,7 +264,7 @@ export function ConfigEditorModal({ open, onOpenChange }: Props) {
           ) : tab === 'subs' ? (
             <SubsTab doc={doc} rerender={rerender} showToast={showToast} />
           ) : (
-            <RulesTab ruleProviders={ruleProviders} inlineNames={inlineRuleNames} rerender={rerender} showToast={showToast} />
+            <RulesTab doc={doc} inlineNames={inlineRuleNames} rerender={rerender} showToast={showToast} />
           )}
         </div>
       </DialogContent>
@@ -310,11 +408,10 @@ function GroupCard({
             </Select>
           </div>
           <label className="mb-1.5 flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+            <Switch
               checked={!!group['include-all']}
-              onChange={(e) => {
-                if (e.target.checked) group['include-all'] = true
+              onCheckedChange={(v) => {
+                if (v) group['include-all'] = true
                 else delete group['include-all']
                 rerender()
               }}
@@ -590,16 +687,20 @@ function SubsTab({
 
 /* ====================== САЙТЫ И IP (inline rule-providers) ====================== */
 function RulesTab({
-  ruleProviders,
+  doc,
   inlineNames,
   rerender,
   showToast,
 }: {
-  ruleProviders: Record<string, unknown>
+  doc: MihomoDoc
   inlineNames: string[]
   rerender: () => void
   showToast: (m: string, t?: 'success' | 'error') => void
 }) {
+  const ruleProviders = doc['rule-providers'] ?? (doc['rule-providers'] = {})
+  const rules = doc.rules ?? (doc.rules = [])
+  const selectorNames = (doc['proxy-groups'] ?? []).map((g) => g.name).filter((n): n is string => !!n)
+
   function addList() {
     let i = 1
     while (ruleProviders[`my-list${i > 1 ? i : ''}`]) i++
@@ -625,6 +726,12 @@ function RulesTab({
           key={name}
           name={name}
           rule={ruleProviders[name] as Record<string, unknown>}
+          route={getRouteTarget(rules, name)}
+          selectorNames={selectorNames}
+          onSetRoute={(target) => {
+            setRoute(doc, name, target)
+            rerender()
+          }}
           onRename={(nv) => {
             if (!nv || nv === name) return
             if (ruleProviders[nv]) {
@@ -633,10 +740,12 @@ function RulesTab({
             }
             ruleProviders[nv] = ruleProviders[name]
             delete ruleProviders[name]
+            renameRoute(doc, name, nv) // не дать правилу повиснуть на старом имени
             rerender()
           }}
           onDelete={() => {
             delete ruleProviders[name]
+            setRoute(doc, name, NO_ROUTE) // заодно убрать ссылающееся правило
             rerender()
           }}
           rerender={rerender}
@@ -655,6 +764,9 @@ function RulesTab({
 function RuleCard({
   name,
   rule,
+  route,
+  selectorNames,
+  onSetRoute,
   onRename,
   onDelete,
   rerender,
@@ -662,6 +774,9 @@ function RuleCard({
 }: {
   name: string
   rule: Record<string, unknown>
+  route: string | null
+  selectorNames: string[]
+  onSetRoute: (target: string) => void
   onRename: (nv: string) => void
   onDelete: () => void
   rerender: () => void
@@ -670,22 +785,21 @@ function RuleCard({
   const behavior = (rule.behavior as string) ?? 'classical'
   const payload = (rule.payload ?? (rule.payload = [])) as string[]
 
-  const { domains, ips, keywords, other } = useMemo(() => {
-    const domains: string[] = [],
-      ips: string[] = [],
-      keywords: string[] = [],
-      other: string[] = []
-    for (const raw of payload) {
-      const L = String(raw).trim()
-      if (/^DOMAIN-KEYWORD,/i.test(L)) keywords.push(L)
-      else if (/^DOMAIN(-SUFFIX)?,/i.test(L)) domains.push(L)
-      else if (/^IP-CIDR6?,/i.test(L)) ips.push(L)
-      else if (behavior === 'domain' && !L.includes(',')) domains.push(L)
-      else if (behavior === 'ipcidr' && !L.includes(',')) ips.push(L)
-      else other.push(L)
-    }
-    return { domains, ips, keywords, other }
-  }, [payload, behavior])
+  // Классифицируем на каждом рендере: payload мутируется по ссылке (push/splice),
+  // поэтому useMemo по [payload] не пересчитывался бы. Список небольшой — это дёшево.
+  const domains: string[] = [],
+    ips: string[] = [],
+    keywords: string[] = [],
+    other: string[] = []
+  for (const raw of payload) {
+    const L = String(raw).trim()
+    if (/^DOMAIN-KEYWORD,/i.test(L)) keywords.push(L)
+    else if (/^DOMAIN(-SUFFIX)?,/i.test(L)) domains.push(L)
+    else if (/^IP-CIDR6?,/i.test(L)) ips.push(L)
+    else if (behavior === 'domain' && !L.includes(',')) domains.push(L)
+    else if (behavior === 'ipcidr' && !L.includes(',')) ips.push(L)
+    else other.push(L)
+  }
 
   function removeLine(line: string) {
     const i = payload.indexOf(line)
@@ -744,6 +858,30 @@ function RuleCard({
         </div>
       </div>
       <div className="flex flex-col gap-4 p-4">
+        <div className="border-border bg-background flex flex-wrap items-center gap-2.5 rounded-lg border px-3 py-2.5">
+          <IconRoute size={16} className="text-orange-400 shrink-0" />
+          <span className="text-sm font-medium">Маршрут:</span>
+          <Select value={route ?? NO_ROUTE} onValueChange={onSetRoute}>
+            <SelectTrigger size="sm" className="min-w-44 flex-1">
+              <SelectValue placeholder="не привязан" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_ROUTE}>— не привязан —</SelectItem>
+              {selectorNames.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+              <SelectItem value="DIRECT">DIRECT</SelectItem>
+              <SelectItem value="REJECT">REJECT</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground w-full text-xs leading-snug">
+            {route
+              ? `Трафик из списка идёт через «${route}» (правило RULE-SET в rules).`
+              : 'Список ни к чему не привязан — выберите селектор, чтобы трафик через него пошёл.'}
+          </span>
+        </div>
         <PayloadSection title="🌐 Домены" items={domains} kind="domain" onAdd={addEntry} onRemove={removeLine} />
         <PayloadSection title="🔢 IP / CIDR" items={ips} kind="ip" onAdd={addEntry} onRemove={removeLine} />
         {behavior === 'classical' && (
