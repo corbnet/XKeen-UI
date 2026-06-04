@@ -431,7 +431,22 @@ function GroupCard({
             <Select
               value={group.type ?? 'select'}
               onValueChange={(v) => {
-                group.type = v as GroupType
+                const t = v as GroupType
+                group.type = t
+                const auto = t === 'url-test' || t === 'fallback' || t === 'load-balance'
+                if (auto) {
+                  // url/interval обязательны для health-check, иначе url-test не работает.
+                  // Записываем сразу, а не только при ручном вводе.
+                  group.url ??= DEFAULT_HC_URL
+                  group.interval ??= 300
+                  if (t === 'url-test') group.tolerance ??= 50
+                  else delete group.tolerance
+                } else {
+                  // у select/relay этих полей быть не должно
+                  delete group.url
+                  delete group.interval
+                  delete group.tolerance
+                }
                 rerender()
               }}
             >
@@ -485,6 +500,20 @@ function GroupCard({
                 }}
               />
             </div>
+            {group.type === 'url-test' && (
+              <div className="flex w-28 flex-col gap-1.5">
+                <label className="text-muted-foreground text-xs">Tolerance, мс</label>
+                <Input
+                  className="h-8"
+                  type="number"
+                  value={group.tolerance ?? 50}
+                  onChange={(e) => {
+                    group.tolerance = +e.target.value || 0
+                    rerender()
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
 
