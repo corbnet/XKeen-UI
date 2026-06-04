@@ -4,7 +4,7 @@ import { LoginForm } from './components/auth/Login'
 import type { CodeMirrorRef } from './components/configuration/CodeMirror'
 import { ConfigPanel } from './components/configuration/ConfigPanel'
 import { LogPanel } from './components/log/LogPanel'
-import { StatusBar } from './components/status/StatusBar'
+import { Sidebar, type AppSection } from './components/status/Sidebar'
 import { Toast } from './components/ui/toast'
 import { apiCall, capitalize } from './lib/api'
 import { LazyBoundary, lazyLoad, useLazyMount } from './lib/loader'
@@ -403,26 +403,35 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
   const logout = onLogout
   const onInstalled = useCallback(() => void checkVersion(), [checkVersion])
   const openModal = useCallback((modal: string) => dispatch({ type: 'SHOW_MODAL', modal: modal as any, show: true }), [dispatch])
+  const [section, setSection] = useState<AppSection>('config')
 
   return (
     <div className="bg-muted dark:bg-background flex min-h-dvh flex-col">
       <main className="flex flex-1 flex-col">
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-3 px-3 py-3">
-          <StatusBar
+        <div className="mx-auto flex w-full flex-1 flex-col gap-3 px-3 py-3 md:flex-row md:items-stretch">
+          <Sidebar
+            section={section}
+            onChangeSection={setSection}
             onOpenCoreManage={() => openModal('showCoreManageModal')}
             onOpenSettings={() => openModal('showSettingsModal')}
             onRefreshStatus={() => void checkStatus()}
             onLogout={logout}
           />
-          <ConfigPanel
-            editorRef={editorRef}
-            configActionsRef={configActionsRef}
-            onOpenImport={() => openModal('showImportModal')}
-            onOpenTemplate={() => openModal('showTemplateModal')}
-            onOpenGeoScan={() => openModal('showGeoScanModal')}
-            onRefreshConfigs={() => loadConfigs(undefined, false, true)}
-          />
-          <LogPanel />
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div className={section === 'config' ? 'contents' : 'hidden'}>
+              <ConfigPanel
+                editorRef={editorRef}
+                configActionsRef={configActionsRef}
+                onOpenImport={() => openModal('showImportModal')}
+                onOpenTemplate={() => openModal('showTemplateModal')}
+                onOpenGeoScan={() => openModal('showGeoScanModal')}
+                onRefreshConfigs={() => loadConfigs(undefined, false, true)}
+              />
+            </div>
+            <div className={section === 'logs' ? 'contents' : 'hidden'}>
+              <LogPanel />
+            </div>
+          </div>
         </div>
       </main>
       <Toast />
